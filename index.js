@@ -31,8 +31,20 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
+    const toyCollection = client.db('toyDB').collection('services')
 
 
+app.post('/upload', async(req,res)=>{
+    const data = req.body;
+    const result = await toyCollection.insertOne(data);
+    res.send(result);
+})
+
+app.get('/alltoys', async(req,res)=>{
+    const toys = toyCollection.find();
+    const result = await toys.toArray();
+    res.send(result);
+})
 
 
 
