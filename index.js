@@ -3,7 +3,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 // middleware 
@@ -40,9 +40,48 @@ app.post('/upload', async(req,res)=>{
     res.send(result);
 })
 
-app.get('/alltoys', async(req,res)=>{
-    const toys = toyCollection.find();
-    const result = await toys.toArray();
+// app.get('/alltoys', async(req,res)=>{
+//     const toys = toyCollection.find();
+//     const result = await toys.toArray();
+//     res.send(result);
+// })
+
+
+app.get('/alltoys', async(req, res) => {
+    let query ={}
+    if(req.query?.sellerEmail){
+        query = {sellerEmail: req.query.sellerEmail}
+    }
+    console.log(query);
+    const result = await toyCollection.find(query).toArray();
+    res.send(result);
+})
+
+
+app.get('/singletoy/:id', async(req, res)=>{
+    const id = req.params.id;
+    const filter= {_id: new ObjectId(id)}
+    const data= await toyCollection.findOne(filter);
+    res.send(data);
+})
+
+
+
+app.patch('/update/:id', async(req, res)=>{
+    const id=req.params.id;
+    const updatedData = req.body
+    const filter = {_id: new ObjectId(id)}
+    const doc ={
+        $set: {...updatedData}
+    }
+    const result = await toyCollection.updateOne(filter, doc)
+    res.send(result)
+})
+
+app.delete('/sigletoy/:id', async (req, res) => {
+    const id= req.params.id;
+    const filter= {_id: new ObjectId(id)}
+    const result = await toyCollection.deleteOne(filter);
     res.send(result);
 })
 
