@@ -75,19 +75,7 @@ async function run() {
             res.send(data);
         })
 
-        // Update Item 
-
-        app.patch('/update/:id', async (req, res) => {
-            const id = req.params.id;
-            const updatedData = req.body
-            const filter = { _id: new ObjectId(id) }
-            const doc = {
-                $set: { ...updatedData }
-            }
-            const result = await toyCollection.updateOne(filter, doc)
-            res.send(result)
-        })
-
+        
 
         // Delete Item 
 
