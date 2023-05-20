@@ -29,10 +29,23 @@ async function run() {
 
         const toyCollection = client.db('toyDB').collection('services')
 
+        const indexkeys = { name: 1 }
+        const indexOptions = { name: "name" }
+
+        const result = await toyCollection.createIndex(indexkeys, indexOptions)
+
+        app.get('/toySearch/:text', async (req, res) => {
+            const searchText = req.params.text
+            const result = await toyCollection.find({name:{$regex: searchText, $options: "i"}}).toArray()
+
+            res.send(result)
+        })
+
         // Post item to database 
 
         app.post('/upload', async (req, res) => {
             const data = req.body;
+            data.createdAt = new Date()
             const result = await toyCollection.insertOne(data);
             res.send(result);
         })
@@ -50,7 +63,7 @@ async function run() {
 
         })
 
-        // Get Single item by Email 
+        // Get Single item by Email OR My toys
 
         app.get('/alltoys', async (req, res) => {
             let query = {}
@@ -58,7 +71,7 @@ async function run() {
                 query = { sellerEmail: req.query.sellerEmail }
             }
             // console.log(query);
-            const result = await toyCollection.find(query).toArray();
+            const result = await toyCollection.find(query).sort({ createdAt: -1 }).toArray();
             res.send(result);
         })
 
