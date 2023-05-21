@@ -29,10 +29,32 @@ async function run() {
 
         const toyCollection = client.db('toyDB').collection('services')
 
-        const indexkeys = { name: 1 }
-        const indexOptions = { name: "name" }
+        // const indexkeys = { name: 1 }
+        // const indexOptions = { name: "name" }
 
-        const result = await toyCollection.createIndex(indexkeys, indexOptions)
+        // const result = await toyCollection.createIndex(indexkeys, indexOptions)
+
+         // Get Single item by Email OR My toys
+
+         app.get('/alltoys', async (req, res) => {
+            let query = {}
+            if (req.query?.sellerEmail) {
+                query = { sellerEmail: req.query.sellerEmail }
+            }
+            // sort by price 
+            const sortOptions ={}
+            if(req.query?.sort === 'asc'){
+                sortOptions.price = 1;
+            }
+            else if(req.query?.sort === 'desc'){
+                sortOptions.price = -1;
+            }
+            // console.log(query);
+            const result = await toyCollection.find(query).sort(sortOptions).toArray();
+            res.send(result);
+        })
+
+        // Search api 
 
         app.get('/toySearch/:text', async (req, res) => {
             const searchText = req.params.text
@@ -41,40 +63,20 @@ async function run() {
             res.send(result)
         })
 
-        // Post item to database 
-
-        app.post('/upload', async (req, res) => {
-            const data = req.body;
-            data.createdAt = new Date()
-            const result = await toyCollection.insertOne(data);
-            res.send(result);
-        })
-
+        
         // Get item by subcategory
-
+        
         app.get('/alltoys/:text', async (req, res) => {
-
+            
             if (req.params.text === 'classicCars' || req.params.text === 'racingCars' || req.params.text === 'fireTrucks') {
                 const result = await toyCollection.find({ subcategory: req.params.text }).toArray();
                 return res.send(result);
             }
             const result = await toyCollection.find({}).toArray();
             res.send(result);
-
+            
         })
-
-        // Get Single item by Email OR My toys
-
-        app.get('/alltoys', async (req, res) => {
-            let query = {}
-            if (req.query?.sellerEmail) {
-                query = { sellerEmail: req.query.sellerEmail }
-            }
-            // console.log(query);
-            const result = await toyCollection.find(query).sort({ createdAt: -1 }).toArray();
-            res.send(result);
-        })
-
+        
         // Get single item by Id 
 
         app.get('/singletoy/:id', async (req, res) => {
@@ -84,6 +86,17 @@ async function run() {
             res.send(data);
         })
 
+        
+        // Post item to database 
+
+        app.post('/upload', async (req, res) => {
+            const data = req.body;
+            data.createdAt = new Date()
+            const result = await toyCollection.insertOne(data);
+            res.send(result);
+        })
+
+       
         // Update Item 
 
         app.patch('/update/:id', async (req, res) => {
@@ -109,13 +122,9 @@ async function run() {
 
 
 
-
-
-
-
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        // await client.db("admin").command({ ping: 1 });
+        // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
